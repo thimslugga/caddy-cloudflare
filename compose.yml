@@ -1,0 +1,28 @@
+---
+volumes:
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
+
+networks:
+  proxy:
+
+services:
+  caddy:
+    container_name: caddy
+    image: ghcr.io/thimslugga/caddy-cloudflare:latest
+    restart: unless-stopped
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+      - 443:443/udp
+    environment:
+      CLOUDFLARE_API_TOKEN: <token_goes_here>
+    volumes:
+      - ./caddy-config:/config
+      - ./caddy-data:/data
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - proxy

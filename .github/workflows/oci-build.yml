@@ -1,0 +1,116 @@
+name: caddy-cloudflare OCI build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+      - "Dockerfile.alpine"
+      - "VERSION"
+    #paths-ignore:
+    #  - "README.md"
+  #pull_request:
+  #paths-ignore:
+  #  - "README.md"
+
+env:
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY: ghcr.io
+
+# Cancel any already started but still active runs of this workflow on the same branch.
+#concurrency:
+#  group: ${{ github.ref }}-${{ github.workflow }}
+#  cancel-in-progress: true
+
+jobs:
+  build-and-push-images:
+    if: github.repository == 'thimslugga/caddy-cloudflare'
+    timeout-minutes: 15
+    name: Build and Push Images
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+      #pull-requests: write
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Configure Version
+        shell: bash
+        run: |
+          echo "VERSION=$(cat ./VERSION)" >> $GITHUB_ENV
+        id: configure_version
+
+      # Add support for more platforms with QEMU (optional)
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        #with:
+        #  version: latest
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      #- name: Build and push container image
+      #  uses: docker/build-push-action@v3
+      #  id: docker_build
+      #  with:
+      #    push: ${{ github.event_name != 'pull_request' }}
+      #    context: .
+      #    file: ./Containerfile
+      #    platforms: linux/amd64,linux/arm64
+      #    tags: ghcr.io/thimslugga/caddy-cloudflare:latest
+      #    tags: ${{ steps.meta.outputs.tags }}
+      #    labels: ${{ steps.meta.outputs.labels }}
+
+      # --platform linux/amd64,linux/arm/v7,linux/arm64 \
+      - name: Build caddy image
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --push \
+            --progress plain \
+            -t ghcr.io/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest \
+            -t ghcr.io/${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            -f ./Dockerfile \
+            "$@" \
+            .
+
+      - name: Build caddy alpine image
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            --push \
+            --progress plain \
+            -t ${{ github.actor }}/${{ env.IMAGE_NAME }}:latest-alpine \
+            -t ${{ github.actor }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-alpine \
+            -f ./Dockerfile.alpine \
+            "$@" \
+            .
+
+      #- name: Generate artifact attestation
+      #  uses: actions/attest-build-provenance@v2
+      #  with:
+      #    subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+      #    subject-digest: ${{ steps.push.outputs.digest }}
+      #    push-to-registry: true
+
+      #- uses: act10ns/slack@v1
+      #  with:
+      #    status: ${{ job.status }}
+      #    steps: ${{ toJson(steps) }}
+      #  env:
+      #    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #  if: failure()
