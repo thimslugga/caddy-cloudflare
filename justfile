@@ -63,3 +63,27 @@ gp:
     git push
 
 ################################################################################
+## Docker
+################################################################################
+
+[doc('Build and push cadd-cloudflare image to the remote docker registry')]
+build-push:
+    docker buildx build --platform linux/amd64,linux/arm64 \
+        --push \
+        --progress plain \
+        -t ghcr.io/thimslugga/caddy-cloudflare:latest \
+        -t ghcr.io/thimslugga:caddy-cloudflare:${VERSION} \
+        -f ./Dockerfile \
+        "$@" \
+        .
+
+[doc('Build and push caddy-cloudflare alpine image to the remote docker registry')]
+build-push-alpine:
+    docker buildx build --platform linux/amd64,linux/arm64 \
+        --push \
+        --progress plain \
+        -t ghcr.io/thimslugga/caddy-cloudflare:latest-alpine \
+        -t ghcr.io/thimslugga:caddy-cloudflare:${VERSION}-alpine \
+        -f ./Dockerfile \
+        "$@" \
+        .
