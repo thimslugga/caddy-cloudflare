@@ -2,27 +2,64 @@
 volumes:
   caddy-data:
     driver: local
+    external: true
   caddy-config:
     driver: local
+    external: true
 
 networks:
-  proxy:
+  internal:
+    name: internal
+    driver: bridge
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: internal
+      com.docker.network.bridge.enable_icc: 1
+  proxy-external:
+    name: proxy-external
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: proxy-external
 
 services:
+  # https://hub.docker.com/_/caddy
   caddy:
     container_name: caddy
-    image: ghcr.io/thimslugga/caddy-cloudflare:latest
-    restart: unless-stopped
+    #image: "ghcr.io/thimslugga/caddy-cloudflare:${CADDY_VERSION:-2.8.4}"
+    image: "caddy/caddy:${CADDY_VERSION:-2.8.4}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - "CADDY_VERSION=${CADDY_VERSION:-2.8.4}"
+        - "DNS=${DNS_PLUGIN:-cloudflare}"
+    #hostname: caddy
     command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
-    ports:
-      - 80:80/tcp
-      - 443:443/tcp
-      - 443:443/udp
+    profiles: ["core", "proxy"]
+    user: "${UID:-1000}:${GID:-1000}"
+    cap_add:
+      - NET_ADMIN
     environment:
       CLOUDFLARE_API_TOKEN: <token_goes_here>
+    #env_file: .env
+    #extra_hosts:
+    #  - "host.docker.internal:host-gateway"  # To access netdata running with "network_mode: host".
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "443:443/udp"
     volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./Caddyfile:/etc/caddy/Caddyfile:ro"
       - ./caddy-config:/config
       - ./caddy-data:/data
-      - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
-      - proxy
+      - proxy-external
+      - internal
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M

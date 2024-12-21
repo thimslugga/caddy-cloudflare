@@ -2,6 +2,10 @@
 
 Caddy container image(s) with Cloudflare DNS plugin included.
 
+## Status
+
+[![caddy-cloudflare OCI build](https://github.com/thimslugga/caddy-cloudflare/actions/workflows/oci-build.yml/badge.svg)](https://github.com/thimslugga/caddy-cloudflare/actions/workflows/oci-build.yml)
+
 ## Usage
 
 ```shell
