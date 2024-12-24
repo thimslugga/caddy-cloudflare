@@ -63,7 +63,7 @@ updates:
       prefix: "ci"
       include: "scope"
     # Automatically merge minor and patch updates if tests pass
-    automerge: true
+    #automerge: true
     # Only get security updates for non-major versions
     ignore:
       - dependency-name: "*"
