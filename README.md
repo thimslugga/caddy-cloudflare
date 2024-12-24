@@ -27,3 +27,10 @@ Caddyfile examples:
     }
 }
 ```
+
+## Resources
+
+- [Caddy](https://caddyserver.com/)
+- [Caddy Releases](https://github.com/caddyserver/caddy/releases)
+- [Caddy Docker Image](https://hub.docker.com/r/caddy/caddy)
+- [Cloudflare DNS Plugin](https://github.com/caddy-dns/cloudflare)

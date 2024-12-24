@@ -1,5 +1,71 @@
+# Optional: Enable all optional checks
+enable=all
+
+# Optional: Check for common POSIX shell compatibility issues
+#enable=check-posix-compatibility
+
+# Optional: Check for ShellCheck directives in inline comments
+#enable=check-directive-in-comments
+
+# Optional: Check for unquoted variables
+#enable=check-unquoted-variables
+
+# Optional: Require explicit cd './dir' instead of cd dir
+#enable=require-explicit-cd
+
+# Optional: Warn about using 'echo' with -n or escape sequences
+#enable=avoid-bare-echo
+
+# Optional: Check for unused declared variables
+#enable=check-unused-variables
+
+# Optional: Warn about using $[ ] instead of $(( ))
+#enable=deprecate-arithmetic-expansion
+
+# Optional: Suggest using arrays instead of space-separated strings
+#enable=suggest-use-arrays
+
+# Optional: Check spacing in [[ ]] expressions
+#enable=check-bracket-spacing
+
+# Disable specific error codes
+# SC1090: Can't follow non-constant source
+# SC1091: Not following: file not found
+#disable=SC1090,SC1091
+
 # Always allow ShellCheck to open arbitrary files from 'source' statements.
 external-sources=true
 
-# Enable all optional checks
-enable=all
+# Look for 'source'd files relative to the checked script,
+# and also look for absolute paths in /etc/profile, /etc/bash.completion, etc
+#source-path=SCRIPTDIR
+
+# Set shell dialect
+# Valid dialects: sh, bash, dash, ksh
+shell=bash
+
+# Optional: Set severity level (error, warning, info, style)
+#severity=style
+
+# Optional: Set minimum severity to consider (error, warning, info, style)
+#min-severity=warning
+
+# Optional: Set maximum line length
+max-line-length=80
+
+# Optional: Require double quotes for strings containing variables
+require-variable-braces=true
+
+# Optional: Follow external sources (scripts sourced via 'source' or '.')
+enable=avoid-nullary-conditions
+enable=check-unassigned-uppercase
+enable=deprecate-which
+enable=quote-safe-variables
+enable=require-double-brackets
+enable=require-variable-braces
+
+# Optional: Set color settings (auto, always, never)
+color=auto
+
+# Optional: Suggest corrections for common mistakes
+suggest-corrections=true

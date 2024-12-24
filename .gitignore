@@ -1,12 +1,17 @@
+# .gitignore
+
+# Distribution / packaging
+*.tgz
+*.tar.gz
+*.tar
+*.zip
+
 ### Build ###
 
-/coverage
 build/
 out/
-
-# Environment
-scripts/*
-.env
+tmp/
+/coverage
 
 ### Linux ###
 *~
@@ -93,12 +98,31 @@ $RECYCLE.BIN/
 
 #.git/
 
+### Environment ###
+
+scripts/*
+
+# dotenv environment variables file
+.env
+.env.test
+
+.venv
+venv
+
 ### Node ###
 
 node_modules
+
+# Optional npm cache directory
+.npm
 
 ### Python ###
 
 __pycache__
 *.py[cod]
 *$py.class
+__pycache__/
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.cache

@@ -1,11 +1,121 @@
-* text=auto eol=lf
+# plaintext, etc
 *.txt text eol=lf
+Makefile text
 *.json text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
 *.toml text eol=lf
 *.md text eol=lf
-*.sh text eol=lf
-*.bat text eol=crlf
-*.cmd text eol=crlf
-*.svg binary
+*.xml    text
+*.xhtml  text
+*.htm    text
+*.html   text
+*.css    text
+*.scss   text
+*.sass   text
+*.less   text
+*.scm    text
+*.styl   text
+
+# scripts
+*.sh     text eol=lf
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.py     text
+*.rb     text
+*.php    text
+*.pl     text
+*.js     text
+*.jsx    text
+*.coffee text
+*.ts     text
+
+# linters
+.csslintrc    text
+.eslintrc     text
+.jscsrc       text
+.jshintrc     text
+.jshintignore text
+.stylelintrc  text
+
+# config files
+*.ini          text
+*.bowerrc      text
+*.cnf          text
+*.conf         text
+*.config       text
+.editorconfig  text
+.gitattributes text
+.gitconfig     text
+.gitignore     text
+.htaccess      text
+*.npmignore    text
+*.sql    text
+
+# images
+*.ai   binary
+*.bmp  binary
+*.eps  binary
+*.gif  binary
+*.ico  binary
+*.jng  binary
+*.jp2  binary
+*.jpg  binary
+*.jpeg binary
+*.jpx  binary
+*.jxr  binary
+*.pdf  binary
+*.png  binary
+*.psb  binary
+*.psd  binary
+*.svg  text
+*.svgz binary
+*.tif  binary
+*.tiff binary
+*.wbmp binary
+*.webp binary
+
+# audio files
+*.kar  binary
+*.m4a  binary
+*.mid  binary
+*.midi binary
+*.mp3  binary
+*.ogg  binary
+*.ra   binary
+
+# video files
+*.3gpp binary
+*.3gp  binary
+*.as   binary
+*.asf  binary
+*.asx  binary
+*.fla  binary
+*.flv  binary
+*.m4v  binary
+*.mng  binary
+*.mov  binary
+*.mp4  binary
+*.mpeg binary
+*.mpg  binary
+*.swc  binary
+*.swf  binary
+*.webm binary
+
+# archives
+*.7z  binary
+*.gz  binary
+*.rar binary
+*.tar binary
+*.zip binary
+
+# fonts
+*.ttf   binary
+*.eot   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+
+# executables and bytecode files
+*.exe binary
+*.pyc binary

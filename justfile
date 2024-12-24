@@ -87,3 +87,12 @@ build-push-alpine:
         -f ./Dockerfile \
         "$@" \
         .
+
+[doc('Pull the latest image from the remote docker registry')]
+pull-image:
+    docker pull ghcr.io/thimslugga/caddy-cloudflare:latest
+
+[doc('Pull the latest alpine image from the remote docker registry')]
+pull-image-alpine:
+    docker pull ghcr.io/thimslugga/caddy-cloudflare:latest-alpine
+

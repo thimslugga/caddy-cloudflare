@@ -1,4 +1,4 @@
-name: caddy-cloudflare OCI build
+name: Build and push images
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ on:
       - "Dockerfile.alpine"
       #- "Dockerfile.rootless"
       - "VERSION"
+      - "MAJOR_VERSION"
   #  paths-ignore:
   #    - "README.md"
   #pull_request:
@@ -30,6 +31,11 @@ jobs:
       contents: read
       attestations: write
       #pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {}
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
@@ -64,6 +70,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
         id: login
 
+      # https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
       #- name: Build and push image
       #  id: push
       #  uses: docker/build-push-action@v5.0.0
@@ -72,9 +79,10 @@ jobs:
       #    context: .
       #    push: true
       #    file: ./Dockerfile
-      #    platforms: linux/amd64
+      #    platforms: ${{ matrix.platforms }}
       #    tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
       #    labels: ${{ steps.meta.outputs.labels }}
+      #    outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=My multi-arch image
 
       # --platform linux/amd64,linux/arm/v7,linux/arm64 \
       - name: Build caddy image and push to GitHub container registry

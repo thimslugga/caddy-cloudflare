@@ -1,24 +1,91 @@
+---
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  # Enable version updates for Docker
-  - package-ecosystem: "docker" # See documentation for possible values
-    # Look for a `Dockerfile` in the `root` directory
+  - package-ecosystem: "docker"
     directory: "/"
-    # Check for updates once a week
     schedule:
       interval: "weekly"
-    # Disable all pull requests for Docker dependencies
-    #open-pull-requests-limit: 0
-
-  # Enable version updates for GitHub Actions
+      day: "sunday"
+      timezone: "America/New_York"
+      time: "06:00"
+    # Add labels to help identify updates
+    labels:
+      - dependencies
+      - docker
+    # Raise pull requests for version updates
+    open-pull-requests-limit: 2
+    # Group all dependencies into a single PR
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
+    # Only get security updates for non-major versions
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    reviewers:
+      - "thimslugga"
+    registries:
+      #- ghcr # GitHub Container Registry
+      - docker-hub
+      #- ecr # Amazon Elastic Container Registry
+  # Check any other Dockerfiles in subdirectories
+  #- package-ecosystem: "docker"
+  #  directory: "/docker"
+  #  schedule:
+  #    interval: "weekly"
+  #  labels:
+  #    - "docker"
+  #    - "dependencies"
   - package-ecosystem: "github-actions"
     # Workflow files stored in the default location of `.github/workflows`
     # You don't need to specify `/.github/workflows` for `directory`. You can use `directory: "/"`.
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      timezone: "America/New_York"
+      time: "06:00"
+    labels:
+      - dependencies
+      - github_actions
+    #open-pull-requests-limit: 2
+    # Group all actions updates into a single PR
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    # Automatically merge minor and patch updates if tests pass
+    automerge: true
+    # Only get security updates for non-major versions
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    reviewers:
+      - "thimslugga"
+  # Shell scripts (if you have any external dependencies managed by a package manager)
+  #- package-ecosystem: "pip"
+  #  directory: "/scripts"
+  #  schedule:
+  #    interval: "monthly"
+  #  labels:
+  #    - "python"
+  #    - "dependencies"
+  #  # Group all Python dependencies into a single PR
+  #  groups:
+  #    python-dependencies:
+  #      patterns:
+  #        - "*"
+#registries:
+#  ghcr:
+#    type: docker-registry
+#    url: ghcr.io
+#    username: x
+#    password: ${{ secrets.DEPENDABOT_GHPR_TOKEN }}

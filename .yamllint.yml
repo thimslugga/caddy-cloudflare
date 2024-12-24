@@ -1,12 +1,127 @@
 ---
+# This is a sample .yamllint.yml configuration file
+# See https://yamllint.readthedocs.io/ for more details
+
+# Set the maximum line length. Set to 'false' to disable
 extends: default
+
+yaml-files:
+  - "*.yaml"
+  - "*.yml"
+  - ".yamllint"
+
+# Configure specific rules
 rules:
-    line-length:
-        max: 120
-        level: warning
-    indentation:
-        indent-sequences: consistent
-    comments:
-        require-starting-space: true
-        ignore-shebangs: true
-        min-spaces-from-content: 1
+  braces:
+    # Keeping 0 spaces inside braces
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  brackets:
+    # Keeping 0 spaces inside brackets
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  colons:
+    # Keeping 1 space after colons
+    max-spaces-before: 0
+    max-spaces-after: 1
+
+  commas:
+    # Keeping 0 spaces before comma and 1 space after it
+    max-spaces-before: 0
+    min-spaces-after: 1
+    max-spaces-after: 1
+
+  comments:
+    # Enabling comments starting with '#'
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1
+    level: warning
+
+  comments-indentation:
+    # Comments should be indented at the same level as content
+    level: warning
+
+  document-end:
+    # Disable requirement for '...' document end marker
+    present: false
+
+  document-start:
+    # Require '---' document start marker
+    present: true
+    level: error
+
+  empty-lines:
+    # Maximum number of empty lines
+    max: 2
+    max-start: 0
+    max-end: 0
+    level: warning
+
+  empty-values:
+    # Allow empty values in mappings
+    forbid-in-block-mappings: false
+    forbid-in-flow-mappings: false
+
+  hyphens:
+    # Keeping 1 space after hyphens
+    max-spaces-after: 1
+
+  indentation:
+    # Use 2 spaces for indentation
+    spaces: 2
+    indent-sequences: consistent
+    check-multi-line-strings: false
+
+  key-duplicates:
+    # Disallow duplicate keys
+    level: error
+
+  key-ordering:
+    # Don't enforce key ordering
+    level: warning
+    require-starting-space: true
+
+  line-length:
+    # Set maximum line length to 120
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+    level: warning
+
+  new-line-at-end-of-file:
+    # Require new line at end of file
+    level: error
+
+  new-lines:
+    # UNIX-style line endings
+    type: unix
+
+  octal-values:
+    # Forbid octal values
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+
+  quoted-strings:
+    # Don't enforce quote style
+    quote-type: any
+    required: false
+    extra-required: []
+    extra-allowed: []
+    level: warning
+
+  trailing-spaces:
+    # Disallow trailing spaces
+    level: error
+
+  truthy:
+    # Allow only standard truthy values
+    allowed-values: ["true", "false", "yes", "no"]
+    check-keys: true
+    level: error

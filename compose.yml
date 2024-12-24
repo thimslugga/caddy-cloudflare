@@ -22,17 +22,16 @@ networks:
       com.docker.network.bridge.name: proxy-external
 
 services:
-  # https://hub.docker.com/_/caddy
   caddy:
     container_name: caddy
+    image: "docker.io/caddy/caddy:${CADDY_VERSION:-2.8.4}"
     #image: "ghcr.io/thimslugga/caddy-cloudflare:${CADDY_VERSION:-2.8.4}"
-    image: "caddy/caddy:${CADDY_VERSION:-2.8.4}"
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - "CADDY_VERSION=${CADDY_VERSION:-2.8.4}"
-        - "DNS=${DNS_PLUGIN:-cloudflare}"
+    #build:
+    #  context: .
+    #  dockerfile: ./Dockerfile
+    #  args:
+    #    - "CADDY_VERSION=${CADDY_VERSION:-2.8.4}"
+    #    - "DNS=${DNS_PLUGIN:-cloudflare}"
     #hostname: caddy
     command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     profiles: ["core", "proxy"]

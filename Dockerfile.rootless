@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 ARG CADDY_VERSION=2.8.4
-
 # https://github.com/caddyserver/caddy-docker/issues/104#issue-665571194
 FROM caddy:${CADDY_VERSION}-builder AS builder
 
@@ -17,25 +16,30 @@ LABEL org.opencontainers.image.title="caddy-cloudflare" \
   org.opencontainers.image.url="https://github.com/thimslugga/caddy-cloudflare" \
   org.opencontainers.image.source="https://github.com/thimslugga/caddy-cloudflare" \
   org.opencontainers.image.documentation="https://github.com/thimslugga/caddy-cloudflare/blob/main/README.md" \
-  org.opencontainers.image.version="${CADDY_VERSION}" \
+  org.opencontainers.image.version="${CADDY_VERSION}-rootless" \
   org.opencontainers.image.created="${BUILD_DATE}"
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 RUN \
   set -eux; \
-  addgroup -S -g 443 caddy; \
-  adduser -S -u 443 -G caddy -D -H caddy; \
-  mkdir -p /config/caddy /data/caddy; \
-  chown -R caddy:caddy /config /data
+  addgroup -S -g 443 caddy \
+  && adduser -S -u 443 -G caddy -D -H caddy \
+  && mkdir -p /config/caddy /data/caddy \
+  && chown -R caddy:caddy /config /data
 
 USER caddy
 
-ENV XDG_CONFIG_HOME=/config XDG_DATA_HOME=/data
+# See https://caddyserver.com/docs/conventions#file-locations for details
+ENV XDG_CONFIG_HOME /config
+ENV XDG_DATA_HOME /data
 
 VOLUME /config /data
 
-EXPOSE 4443 8080/tcp
+EXPOSE 2019
+EXPOSE 8080
+EXPOSE 8443
+EXPOSE 8443/udp
 
 ENTRYPOINT ["/usr/bin/caddy"]
 

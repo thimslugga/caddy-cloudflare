@@ -48,9 +48,9 @@
 		protocols tls1.3
 		resolvers 1.1.1.2 1.0.0.2
 		#issuer acme {
-		#dns cloudflare {env.CF_API_TOKEN}
-		#propagation_delay 60s
-		#propagation_timeout -1
+		#   dns cloudflare {env.CF_API_TOKEN}
+		#   propagation_delay 60s
+		#   propagation_timeout -1
 		#}
 	}
 }
@@ -64,6 +64,7 @@
 	@not_local {
 		not remote_ip 10.0.0.0/8 172.16.0.0/16 192.168.0.0/16 fc00::/7
 	}
+
 	respond @not_local 403
 }
 
