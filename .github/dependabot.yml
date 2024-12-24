@@ -4,6 +4,17 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
+#registries:
+#  ghcr:
+#    type: docker-registry
+#    url: ghcr.io
+#    username: x
+#    password: ${{ secrets.DEPENDABOT_GHPR_TOKEN }}
+#  dockerhub: # Define access for a private registry
+#    type: docker-registry
+#    url: registry.hub.docker.com
+#    username: thimslugga
+#    password: ${{secrets.DOCKERHUB_PASSWORD}}
 updates:
   - package-ecosystem: "docker"
     directory: "/"
@@ -29,10 +40,10 @@ updates:
         update-types: ["version-update:semver-major"]
     reviewers:
       - "thimslugga"
-    registries:
-      #- ghcr # GitHub Container Registry
-      - docker-hub
-      #- ecr # Amazon Elastic Container Registry
+    #registries:
+    #- ghcr # GitHub Container Registry
+    #- dockerhub
+    #- ecr # Amazon Elastic Container Registry
   # Check any other Dockerfiles in subdirectories
   #- package-ecosystem: "docker"
   #  directory: "/docker"
@@ -83,9 +94,3 @@ updates:
   #    python-dependencies:
   #      patterns:
   #        - "*"
-#registries:
-#  ghcr:
-#    type: docker-registry
-#    url: ghcr.io
-#    username: x
-#    password: ${{ secrets.DEPENDABOT_GHPR_TOKEN }}
