@@ -17,11 +17,12 @@ help:
 
 [doc("Run all local static checks")]
 check:
-    actionlint -color=false .github/workflows/*.yml
+    actionlint -color=false -shellcheck=shellcheck .github/workflows/*.yml
     yamllint -f parsable .
     rumdl check . --color never --exclude "docs/styles/**"
     hadolint Dockerfile docs/examples/dockerfile/Dockerfile*
     just --fmt --check
+    just --dry-run build 2>&1 | shellcheck --shell=bash -
     uv sync --frozen
     uv run --frozen --no-sync ruff check .
     uv run --frozen --no-sync ruff format --check .
@@ -56,8 +57,10 @@ validate-version candidate=caddy_version:
 build tag=dev_tag: (validate-version caddy_version)
     set -Eeuo pipefail
 
-    readonly build_date="$(git show -s --format=%cI HEAD)"
-    readonly revision="$(git rev-parse HEAD)"
+    build_date="$(git show -s --format=%cI HEAD)"
+    readonly build_date
+    revision="$(git rev-parse HEAD)"
+    readonly revision
     docker build \
       --build-arg "BUILD_DATE=${build_date}" \
       --build-arg "CADDY_VERSION={{ caddy_version }}" \
