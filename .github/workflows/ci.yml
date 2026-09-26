@@ -105,14 +105,16 @@ jobs:
         shell: bash
         run: |
           expected_version="v${{ steps.build.outputs.caddy_version }}"
-          actual_version="$(docker run --rm caddy-cloudflare:test version)"
+          actual_version="$(docker run --rm --entrypoint caddy \
+            caddy-cloudflare:test version)"
           if [[ "${actual_version}" != "${expected_version}"* ]]; then
             printf 'Expected %s, got %s\n' \
               "${expected_version}" "${actual_version}" >&2
             exit 1
           fi
 
-          build_info="$(docker run --rm caddy-cloudflare:test build-info)"
+          build_info="$(docker run --rm --entrypoint caddy \
+            caddy-cloudflare:test build-info)"
           grep -Eq \
             'github.com/caddy-dns/cloudflare[[:space:]]+v0\.2\.4' \
             <<< "${build_info}"
@@ -146,6 +148,7 @@ jobs:
         shell: bash
         run: |
           docker run --rm \
+            --entrypoint caddy \
             --env CF_API_TOKEN=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
             --volume "${PWD}/docs/examples/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
             caddy-cloudflare:test \
@@ -155,6 +158,7 @@ jobs:
         shell: bash
         run: |
           container_id="$(docker run --detach \
+            --entrypoint caddy \
             --publish 127.0.0.1:8080:8080 \
             caddy-cloudflare:test \
             respond --listen :8080 --body ok)"
@@ -277,7 +281,7 @@ jobs:
       - name: Verify example binary
         shell: bash
         run: |
-          actual_version="$(docker run --rm \
+          actual_version="$(docker run --rm --entrypoint caddy \
             caddy-example:${{ matrix.name }} version)"
           expected_version="v${{ steps.version.outputs.value }}"
           if [[ "${actual_version}" != "${expected_version}"* ]]; then
@@ -291,7 +295,10 @@ jobs:
         shell: bash
         run: |
           caddyfile="${RUNNER_TEMP}/Caddyfile.rootless"
-          printf '%s\n' 'https://localhost { respond "ok" }' > "${caddyfile}"
+          printf '%s\n' \
+            'https://localhost {' \
+            '  respond "ok"' \
+            '}' > "${caddyfile}"
 
           container_id="$(docker run --detach \
             --publish 127.0.0.1:8080:80 \
