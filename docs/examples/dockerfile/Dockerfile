@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+ARG CADDY_VERSION
+ARG CADDY_BUILDER_DIGEST=sha256:369218c81ca6d6af249981221b3a5c764d886dd5b058f51d144066de13f2418d
+ARG CADDY_RUNTIME_DIGEST=sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52
+
+FROM caddy:${CADDY_VERSION}-builder@${CADDY_BUILDER_DIGEST} AS builder
+
+ARG CADDY_VERSION
+ARG CLOUDFLARE_PLUGIN_VERSION=v0.2.4
+ARG CADDY_SECURITY_VERSION=v1.2.2
+
+RUN xcaddy build "v${CADDY_VERSION}" \
+        --with "github.com/caddy-dns/cloudflare@${CLOUDFLARE_PLUGIN_VERSION}" \
+        --with "github.com/greenpau/caddy-security@${CADDY_SECURITY_VERSION}"
+
+FROM caddy:${CADDY_VERSION}@${CADDY_RUNTIME_DIGEST}
+
+ARG BUILD_DATE
+ARG CADDY_VERSION
+ARG IMAGE_VERSION
+ARG SOURCE_URL=https://github.com/thimslugga/caddy-cloudflare
+ARG VCS_REF
+
+LABEL org.opencontainers.image.title="caddy-cloudflare" \
+  org.opencontainers.image.description="Caddy with Cloudflare DNS and caddy-security modules." \
+  org.opencontainers.image.authors="thimslugga" \
+  org.opencontainers.image.created="${BUILD_DATE}" \
+  org.opencontainers.image.licenses="Beerware" \
+  org.opencontainers.image.revision="${VCS_REF}" \
+  org.opencontainers.image.url="${SOURCE_URL}" \
+  org.opencontainers.image.source="${SOURCE_URL}" \
+  org.opencontainers.image.documentation="https://github.com/thimslugga/caddy-cloudflare/blob/main/README.md" \
+  org.opencontainers.image.version="${IMAGE_VERSION}" \
+  io.caddy.version="${CADDY_VERSION}"
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy

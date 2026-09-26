@@ -1,0 +1,8 @@
+{
+  acme_dns cloudflare {env.CF_API_TOKEN}
+}
+
+{$CADDY_SITE_ADDRESS:localhost} {
+  encode zstd gzip
+  respond "Caddy Cloudflare is running"
+}
