@@ -1,0 +1,69 @@
+[global]
+disable = ["MD043"]
+
+[MD003]
+style = "atx"
+
+[MD004]
+style = "consistent"
+
+[MD007]
+indent = 2
+style = "fixed"
+
+[MD009]
+br-spaces = 2
+strict = false
+
+[MD010]
+code-blocks = true
+spaces-per-tab = 2
+
+[MD012]
+maximum = 1
+
+[MD013]
+code-blocks = false
+headings = false
+line-length = 80
+tables = false
+
+[MD022]
+lines-above = 1
+lines-below = 1
+
+[MD024]
+siblings-only = true
+
+[MD025]
+front-matter-title = ""
+level = 1
+
+[MD026]
+punctuation = ".,;:!。，；：！"
+
+[MD029]
+style = "one_or_ordered"
+
+[MD033]
+allowed-elements = []
+
+[MD035]
+style = "---"
+
+[MD036]
+punctuation = ".,;:!?。，；：！？"
+
+[MD041]
+front-matter-title = ""
+level = 1
+
+[MD044]
+code-blocks = false
+names = []
+
+[MD046]
+style = "fenced"
+
+[MD048]
+style = "backtick"

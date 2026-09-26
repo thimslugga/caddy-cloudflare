@@ -1,22 +1,48 @@
-# .gitignore
-
-# Distribution / packaging
-*.tgz
-*.tar.gz
-*.tar
-*.zip
-
 ### Build ###
 
 build/
 out/
 tmp/
 /coverage
+bin/
+/docs/styles/
 
-### Linux ###
-*~
-*~
-*.swp
+# Distribution / packaging
+*.tar.gz
+*.tgz
+*.tar
+*.zip
+*.p7z
+*.rar
+
+### Environment ###
+
+# dotenv environment variables file
+.env
+.env.local
+.env.test
+
+### Python ###
+
+__pycache__
+*.py[cod]
+*$py.class
+__pycache__/
+.cache
+.ruff_cache
+.mypy_cache
+.pytest_cache
+.coverage
+.pyright
+.venv
+venv
+
+### Node ###
+
+node_modules
+
+# Optional npm cache directory
+.npm
 
 ### macOS ###
 .DS_Store
@@ -25,6 +51,7 @@ tmp/
 
 # Icon must end with two \r
 Icon
+
 
 # Thumbnails
 ._*
@@ -75,10 +102,17 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-### Edtitor ###
+### Git ###
+
+#.git/
+
+### Edtitors ###
+
+*~
+*.swp
 
 # VS Code
-.vscode/
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -86,43 +120,38 @@ $RECYCLE.BIN/
 *.code-workspace
 
 # Devcontainer
-.devcontainer/
+.devcontainer/*
 
 # Zed editor
-.zed/
+.zed/*
 
 # JetBrains
-.idea/
+.idea/*
 
-### Git ###
+# Kiro
+.kiro/*
+!.kiro/settings/lsp.json
+!.kiro/settings/mcp.json
+!.kiro/specs
+!.kiro/steering
+!.kiro/skills
+!.kiro/powers
+!.kiro/agents
+!.kiro/agent-sops
 
-#.git/
+# Claude Code
+.claude/*
+!.claude/settings.json
 
-### Environment ###
+# Codex
+.codex/*
+!.codex/settings.json
+!.codex/agents
+!.codex/skills
 
-scripts/*
+.agents/*
+!.agents/skills
+!.agents/agents
 
-# dotenv environment variables file
-.env
-.env.test
-
-.venv
-venv
-
-### Node ###
-
-node_modules
-
-# Optional npm cache directory
-.npm
-
-### Python ###
-
-__pycache__
-*.py[cod]
-*$py.class
-__pycache__/
-.pytest_cache
-.mypy_cache
-.ruff_cache
-.cache
+# Pi
+.pi/*
