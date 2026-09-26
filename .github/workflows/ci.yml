@@ -1,0 +1,332 @@
+---
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - ".github/**"
+      - ".mise.toml"
+      - "Dockerfile"
+      - "CADDY_VERSION"
+      - "docs/**"
+      - "justfile"
+      - "scripts/**"
+      - "*.yml"
+      - "*.yaml"
+      - "*.toml"
+      - "*.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/**"
+      - ".mise.toml"
+      - "Dockerfile"
+      - "CADDY_VERSION"
+      - "docs/**"
+      - "justfile"
+      - "scripts/**"
+      - "*.yml"
+      - "*.yaml"
+      - "*.toml"
+      - "*.md"
+  workflow_call:
+
+concurrency:
+  group: "ci-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Static checks
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Install project tools
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
+
+      - name: Run static checks
+        run: just check
+
+  image:
+    name: Build and test primary image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Install project tools
+        uses: jdx/mise-action@5228313ee0372e111a38da051671ca30fc5a96db # v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Read build metadata
+        id: build
+        shell: bash
+        run: |
+          caddy_version="$(<CADDY_VERSION)"
+          if [[ ! "${caddy_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            printf 'Invalid Caddy version: %s\n' "${caddy_version}" >&2
+            exit 1
+          fi
+
+          {
+            printf 'caddy_version=%s\n' "${caddy_version}"
+            printf 'image_version=ci-%s\n' "${GITHUB_SHA}"
+            printf 'created=%s\n' "$(git show -s --format=%cI HEAD)"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Build primary image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          build-args: |
+            BUILD_DATE=${{ steps.build.outputs.created }}
+            CADDY_VERSION=${{ steps.build.outputs.caddy_version }}
+            IMAGE_VERSION=${{ steps.build.outputs.image_version }}
+            VCS_REF=${{ github.sha }}
+          context: .
+          load: true
+          platforms: linux/amd64
+          push: false
+          tags: |
+            caddy-cloudflare:test
+            ghcr.io/thimslugga/caddy-cloudflare:${{ steps.build.outputs.image_version }}
+
+      - name: Verify binary version and modules
+        shell: bash
+        run: |
+          expected_version="v${{ steps.build.outputs.caddy_version }}"
+          actual_version="$(docker run --rm caddy-cloudflare:test version)"
+          if [[ "${actual_version}" != "${expected_version}"* ]]; then
+            printf 'Expected %s, got %s\n' \
+              "${expected_version}" "${actual_version}" >&2
+            exit 1
+          fi
+
+          build_info="$(docker run --rm caddy-cloudflare:test build-info)"
+          grep -Eq \
+            'github.com/caddy-dns/cloudflare[[:space:]]+v0\.2\.4' \
+            <<< "${build_info}"
+          grep -Eq \
+            'github.com/greenpau/caddy-security[[:space:]]+v1\.2\.2' \
+            <<< "${build_info}"
+
+      - name: Verify OCI labels
+        shell: bash
+        run: |
+          image='caddy-cloudflare:test'
+          version_label="$(docker image inspect --format \
+            '{{ index .Config.Labels "org.opencontainers.image.version" }}' \
+            "${image}")"
+          revision_label="$(docker image inspect --format \
+            '{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
+            "${image}")"
+          created_label="$(docker image inspect --format \
+            '{{ index .Config.Labels "org.opencontainers.image.created" }}' \
+            "${image}")"
+          caddy_version_label="$(docker image inspect --format \
+            '{{ index .Config.Labels "io.caddy.version" }}' \
+            "${image}")"
+
+          [[ "${version_label}" == "${{ steps.build.outputs.image_version }}" ]]
+          [[ "${caddy_version_label}" == "${{ steps.build.outputs.caddy_version }}" ]]
+          [[ "${revision_label}" == "${{ github.sha }}" ]]
+          [[ -n "${created_label}" ]]
+
+      - name: Validate supported Caddyfile
+        shell: bash
+        run: |
+          docker run --rm \
+            --env CF_API_TOKEN=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA \
+            --volume "${PWD}/docs/examples/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy-cloudflare:test \
+            validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
+      - name: Smoke test HTTP response
+        shell: bash
+        run: |
+          container_id="$(docker run --detach \
+            --publish 127.0.0.1:8080:8080 \
+            caddy-cloudflare:test \
+            respond --listen :8080 --body ok)"
+          readonly container_id
+          trap 'docker rm --force "${container_id}" >/dev/null 2>&1 || true' EXIT
+
+          for _ in {1..15}; do
+            if response="$(curl --fail --silent --show-error \
+              http://127.0.0.1:8080)" && [[ "${response}" == "ok" ]]; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          printf 'Caddy did not return the expected response\n' >&2
+          docker logs "${container_id}" >&2
+          exit 1
+
+      - name: Validate Compose example
+        shell: bash
+        run: |
+          cat > docs/examples/compose/.env <<'EOF'
+          CADDY_IMAGE_VERSION=${{ steps.build.outputs.image_version }}
+          CADDY_SITE_ADDRESS=localhost
+          CF_API_TOKEN=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          EOF
+          docker compose \
+            --file docs/examples/compose/compose.yml \
+            config --quiet
+
+      - name: Smoke test Compose example
+        shell: bash
+        run: |
+          trap 'docker compose --file docs/examples/compose/compose.yml down --volumes' EXIT
+          docker compose \
+            --file docs/examples/compose/compose.yml \
+            up --detach --pull never
+
+          for _ in {1..20}; do
+            if response="$(curl --fail --insecure --silent --show-error \
+              --resolve localhost:443:127.0.0.1 \
+              https://localhost)" \
+              && [[ "${response}" == "Caddy Cloudflare is running" ]]; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          docker compose \
+            --file docs/examples/compose/compose.yml \
+            logs >&2
+          exit 1
+
+      - name: Scan primary image
+        run: >-
+          trivy image
+          --exit-code 1
+          --ignore-unfixed
+          --no-progress
+          --scanners vuln
+          --severity HIGH,CRITICAL
+          caddy-cloudflare:test
+
+      - name: Verify multi-platform build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          build-args: |
+            BUILD_DATE=${{ steps.build.outputs.created }}
+            CADDY_VERSION=${{ steps.build.outputs.caddy_version }}
+            IMAGE_VERSION=${{ steps.build.outputs.image_version }}
+            VCS_REF=${{ github.sha }}
+          context: .
+          outputs: type=cacheonly
+          platforms: linux/amd64,linux/arm64
+          push: false
+
+  examples:
+    name: Build example ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: standard
+            dockerfile: Dockerfile
+          - name: alpine
+            dockerfile: Dockerfile.alpine
+          - name: rootless
+            dockerfile: Dockerfile.rootless
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Read Caddy version
+        id: version
+        shell: bash
+        run: printf 'value=%s\n' "$(<CADDY_VERSION)" >> "${GITHUB_OUTPUT}"
+
+      - name: Build example
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            CADDY_VERSION=${{ steps.version.outputs.value }}
+            IMAGE_VERSION=example-${{ matrix.name }}-${{ github.sha }}
+            VCS_REF=${{ github.sha }}
+          context: .
+          file: docs/examples/dockerfile/${{ matrix.dockerfile }}
+          load: true
+          platforms: linux/amd64
+          push: false
+          tags: caddy-example:${{ matrix.name }}
+
+      - name: Verify example binary
+        shell: bash
+        run: |
+          actual_version="$(docker run --rm \
+            caddy-example:${{ matrix.name }} version)"
+          expected_version="v${{ steps.version.outputs.value }}"
+          if [[ "${actual_version}" != "${expected_version}"* ]]; then
+            printf 'Expected %s, got %s\n' \
+              "${expected_version}" "${actual_version}" >&2
+            exit 1
+          fi
+
+      - name: Smoke test rootless listeners
+        if: matrix.name == 'rootless'
+        shell: bash
+        run: |
+          caddyfile="${RUNNER_TEMP}/Caddyfile.rootless"
+          printf '%s\n' 'https://localhost { respond "ok" }' > "${caddyfile}"
+
+          container_id="$(docker run --detach \
+            --publish 127.0.0.1:8080:80 \
+            --publish 127.0.0.1:8443:443 \
+            --volume "${caddyfile}:/etc/caddy/Caddyfile:ro" \
+            caddy-example:rootless)"
+          readonly container_id
+          trap 'docker rm --force "${container_id}" >/dev/null 2>&1 || true' EXIT
+
+          for _ in {1..20}; do
+            http_status="$(curl --output /dev/null --silent \
+              --resolve localhost:8080:127.0.0.1 \
+              --write-out '%{http_code}' http://localhost:8080 || true)"
+            https_response="$(curl --fail --insecure --silent \
+              --resolve localhost:8443:127.0.0.1 \
+              https://localhost:8443 || true)"
+            if [[ "${http_status}" == "308" && "${https_response}" == "ok" ]]; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          docker logs "${container_id}" >&2
+          exit 1
+
+      - name: Verify multi-platform example build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            CADDY_VERSION=${{ steps.version.outputs.value }}
+            IMAGE_VERSION=example-${{ matrix.name }}-${{ github.sha }}
+            VCS_REF=${{ github.sha }}
+          context: .
+          file: docs/examples/dockerfile/${{ matrix.dockerfile }}
+          outputs: type=cacheonly
+          platforms: linux/amd64,linux/arm64
+          push: false

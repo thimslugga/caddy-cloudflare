@@ -1,96 +1,50 @@
 ---
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
-#registries:
-#  ghcr:
-#    type: docker-registry
-#    url: ghcr.io
-#    username: x
-#    password: ${{ secrets.DEPENDABOT_GHPR_TOKEN }}
-#  dockerhub: # Define access for a private registry
-#    type: docker-registry
-#    url: registry.hub.docker.com
-#    username: thimslugga
-#    password: ${{secrets.DOCKERHUB_PASSWORD}}
 updates:
-  - package-ecosystem: "docker"
+  - package-ecosystem: docker
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      timezone: "America/New_York"
+      interval: weekly
+      day: sunday
       time: "06:00"
-    # Add labels to help identify updates
+      timezone: America/New_York
     labels:
       - dependencies
       - docker
-    # Raise pull requests for version updates
-    open-pull-requests-limit: 2
-    # Group all dependencies into a single PR
     groups:
       docker-dependencies:
         patterns:
           - "*"
-    # Only get security updates for non-major versions
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-    reviewers:
-      - "thimslugga"
-    #registries:
-    #- ghcr # GitHub Container Registry
-    #- dockerhub
-    #- ecr # Amazon Elastic Container Registry
-  # Check any other Dockerfiles in subdirectories
-  #- package-ecosystem: "docker"
-  #  directory: "/docker"
-  #  schedule:
-  #    interval: "weekly"
-  #  labels:
-  #    - "docker"
-  #    - "dependencies"
-  - package-ecosystem: "github-actions"
-    # Workflow files stored in the default location of `.github/workflows`
-    # You don't need to specify `/.github/workflows` for `directory`. You can use `directory: "/"`.
-    directory: "/"
+
+  - package-ecosystem: docker
+    directory: "/docs/examples/dockerfile"
     schedule:
-      interval: "weekly"
-      day: "sunday"
-      timezone: "America/New_York"
+      interval: weekly
+      day: sunday
       time: "06:00"
+      timezone: America/New_York
     labels:
       - dependencies
-      - github_actions
-    #open-pull-requests-limit: 2
-    # Group all actions updates into a single PR
+      - docker
     groups:
-      actions-dependencies:
+      example-docker-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: sunday
+      time: "06:00"
+      timezone: America/New_York
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      action-dependencies:
         patterns:
           - "*"
     commit-message:
-      prefix: "ci"
-      include: "scope"
-    # Automatically merge minor and patch updates if tests pass
-    #automerge: true
-    # Only get security updates for non-major versions
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-    reviewers:
-      - "thimslugga"
-  # Shell scripts (if you have any external dependencies managed by a package manager)
-  #- package-ecosystem: "pip"
-  #  directory: "/scripts"
-  #  schedule:
-  #    interval: "monthly"
-  #  labels:
-  #    - "python"
-  #    - "dependencies"
-  #  # Group all Python dependencies into a single PR
-  #  groups:
-  #    python-dependencies:
-  #      patterns:
-  #        - "*"
+      prefix: ci
+      include: scope
