@@ -6,6 +6,8 @@ labels: ''
 assignees: ''
 ---
 
+# Issue report
+
 ## Type of Issue
 <!-- Please check one by replacing [ ] with [x] -->
 - [ ] Bug Report
@@ -34,7 +36,7 @@ assignees: ''
 <!-- Please complete the following information -->
 - OS [e.g., Linux, Windows, macOS]:
 - Architecture [e.g., x86, x64, ARM]:
-- Version [e.g., latest, 2.8.4, etc]:
+- Version [e.g., latest, 2.11.4-r1, etc]:
 - Other relevant software versions:
 
 ## Screenshots/Logs
