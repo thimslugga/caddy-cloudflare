@@ -1,25 +1,3 @@
+# The image is assembled entirely from upstream stages; no local files are
+# copied into the build.
 *
-.git
-.github
-.gitattributes
-.gitignore
-.cache
-.vscode
-.devcontainer
-.editorconfig
-.yamllint.yml
-.markdownlint.yml
-.shellcheckrc
-compose.yml
-justfile
-*.log
-scripts
-VERSION
-README.md
-CHANGELOG.md
-LICENSE
-SECURITY.md
-CONTRIBUTING
-MAINTAINERS
-FAQ.md
-CODE_OF_CONDUCT.md
