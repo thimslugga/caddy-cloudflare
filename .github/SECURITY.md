@@ -19,7 +19,7 @@ Do not open a public issue for an undisclosed vulnerability.
 The maintainer aims to acknowledge a report within three business days and
 provide an initial assessment within seven business days. Timing for a fix
 depends on severity, reproducibility, and affected upstream components. The
-reporter will receive status updates through the private advisory.
+reporter receives status updates through the private advisory.
 
 Coordinated fixes are released as a new versioned image. Security notices and
 upgrade instructions are published in the corresponding GitHub Security
