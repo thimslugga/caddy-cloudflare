@@ -1,17 +1,24 @@
 # Contributing
 
-When contributing to this repository, please first discuss the change you wish
-to make via issue.
+Before starting a change, search existing [issues][issues] and
+[pull requests][pull-requests]. Open an issue when a change needs design or
+scope discussion.
 
-## Issues and feature requests
+## Development checks
 
-If you have found a bug or mistake in the documentation, you can help us by submitting an issue to the [GitHub Repository][github]. Before creating
-an issue, make sure you search the archive to prevent duplicates.
+Install the pinned project tools and run the complete local check:
 
-## Pull request process
+```shell
+mise install
+just check
+```
 
-1. Search our repository for open or closed [pull requests][prs] that relates
-   to your submission. You don't want to duplicate effort.
+Container changes should also pass `just build` on a host with Docker and
+Buildx. Pull requests build the primary image, verify its Caddy version and
+modules, validate supported examples, run a smoke test, and scan the image.
 
-[github]: https://github.com/thimslugga/caddy-cloudflare/issues
-[prs]: https://github.com/thimslugga/caddy-cloudflare/pulls
+Keep `CADDY_VERSION`, dependency pins, and documentation synchronized. Do not
+add secrets, Cloudflare tokens, or private hostnames to examples or test data.
+
+[issues]: https://github.com/thimslugga/caddy-cloudflare/issues
+[pull-requests]: https://github.com/thimslugga/caddy-cloudflare/pulls
